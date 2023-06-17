@@ -10,7 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const strip = require('../index');
+const { strip } = require('../index');
 
 const fixture = path.join.bind(path, __dirname, 'fixtures/html');
 const expected = path.join.bind(path, __dirname, 'expected/html');

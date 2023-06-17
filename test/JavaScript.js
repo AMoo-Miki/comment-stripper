@@ -10,7 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
-const strip = require('../index');
+const { strip } = require('../index');
 
 const tests = path.join.bind(path, __dirname);
 const read = src => fs.readFileSync(src, 'utf-8').replace(/\r*\n/g, '\n');;
@@ -42,22 +42,6 @@ describe('JavaScript comments', () => {
   it('should strip block comments', () => {
     const actual = strip.block('foo // this is a comment\n/* me too */');
     const expected = 'foo // this is a comment\n';
-    assert.strictEqual(actual, expected);
-  });
-
-  // see https://github.com/jonschlinkert/strip-comments/issues/31
-  it('should only strip the first comment', () => {
-    const expected = read(tests('expected/banner.js'));
-    const fixture = read(tests('fixtures/banner.js'));
-    const actual = strip.first(fixture);
-    assert.strictEqual(actual, expected);
-  });
-
-  // see https://github.com/jonschlinkert/strip-comments/issues/31
-  it('should strip the first non-protected comment', () => {
-    const expected = read(tests('expected/banner-protected.js'));
-    const fixture = read(tests('fixtures/banner.js'));
-    const actual = strip.first(fixture, { keepProtected: true });
     assert.strictEqual(actual, expected);
   });
 
@@ -96,8 +80,8 @@ describe('JavaScript comments', () => {
     assert.strictEqual(actual, expected);
   });
 
-  it('should strip all but not globstars `/**/` #2 and `//!` line comments (safe: true)', () => {
-    const actual = strip('var partPath = \'./path/*/to/scripts/**/\'; //! line comment', { safe: true });
+  it('should strip all but not globstars `/**/` #2 and `//!` line comments', () => {
+    const actual = strip('var partPath = \'./path/*/to/scripts/**/\'; //! line comment', { keepProtected: true });
     const expected = 'var partPath = \'./path/*/to/scripts/**/\'; //! line comment';
     assert.strictEqual(actual, expected);
   });
@@ -170,30 +154,28 @@ describe('strip all or empty:', () => {
   it('should strip all multiline, singleline, block and line comments', () => {
     const fixture = read(tests('fixtures/strip-all.js'));
     const expected = read(tests('expected/strip-all.js'));
-    const actual = strip(fixture);
+    const actual = strip(fixture, { safe: false });
+    assert.strictEqual(actual, expected);
+  });
+
+  it('should hoist important comments', () => {
+    const fixture = read(tests('fixtures/strip-safe.js'));
+    const expected = read(tests('expected/strip-safe.js'));
+    const actual = strip(fixture, { safe: true });
     assert.strictEqual(actual, expected);
   });
 
   it('should not strip !important block comments', () => {
     const fixture = read(tests('fixtures/strip-all.js'));
-    const actual = strip.block(fixture, { safe: true });
+    const actual = strip.block(fixture, { keepProtected: true });
     const expected = read(tests('expected/strip-keep-block.js'));
     assert.strictEqual(actual, expected);
   });
 
-  it('should strip only all line comments that not starts with `//!` (safe:true)', () => {
+  it('should strip only all line comments that not starts with `//!` (keepProtected:true)', () => {
     const fixture = read(tests('fixtures/strip-keep-line.js'));
-    const actual = strip.line(fixture, { safe: true });
+    const actual = strip.line(fixture, { keepProtected: true });
     const expected = read(tests('expected/strip-keep-line.js'));
-    assert.strictEqual(actual, expected);
-  });
-});
-
-describe('strip all keep newlines:', () => {
-  it('should strip all comments, but keep newlines', () => {
-    const fixture = read(tests('fixtures/strip-all.js'));
-    const expected = read(tests('expected/strip-keep-newlines.js'));
-    const actual = strip(fixture, { preserveNewlines: true });
     assert.strictEqual(actual, expected);
   });
 });

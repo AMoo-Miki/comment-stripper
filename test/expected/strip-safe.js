@@ -1,21 +1,20 @@
-
-
-
+/*!
+ * important multiline
+ * block comment
+ */
+//! this single-line important comment
+//! that comment
+/**!
+ * and this important
+ * block comment
+ */
 
 'use strict';
 
-
-
-
-
 var foo = function() {};
 
-
-
-
-
-
 var bar = function() {};
+
 
 var baz = '//bar baz not a comment';
 

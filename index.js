@@ -4,7 +4,7 @@
  * Released under the MIT License.
  */
 
-'use strict';
+const loaderUtils = require('loader-utils');
 
 const compile = require('./lib/compile');
 const parse = require('./lib/parse');
@@ -21,7 +21,7 @@ const parse = require('./lib/parse');
  * ```
  * @name  strip
  * @param  {String} `input` string from which to strip comments
- * @param  {Object} `options` optional options, passed to [extract-comments][extract-comments]
+ * @param  {Object} `[options]` optional options, passed to [extract-comments][extract-comments]
  * @option {Boolean} [options] `line` if `false` strip only block comments, default `true`
  * @option {Boolean} [options] `block` if `false` strip only line comments, default `true`
  * @option {Boolean} [options] `keepProtected` Keep ignored comments (e.g. `/*!` and `//!`)
@@ -30,7 +30,7 @@ const parse = require('./lib/parse');
  * @api public
  */
 
-const strip = module.exports = (input, options) => {
+const strip = (input, options = {}) => {
   const opts = { ...options, block: true, line: true };
   return compile(parse(input, opts), opts);
 };
@@ -77,27 +77,6 @@ strip.line = (input, options) => {
 };
 
 /**
- * Strip the first comment from the given `input`. Or, if `opts.keepProtected` is true,
- * the first non-protected comment will be stripped.
- *
- * ```js
- * const output = strip.first(input, { keepProtected: true });
- * console.log(output);
- * // => '//! first comment\nfoo; '
- * ```
- * @name .first
- * @param {String} `input`
- * @param {Object} `options` pass `opts.keepProtected: true` to keep comments with `!`
- * @return {String}
- * @api public
- */
-
-strip.first = (input, options) => {
-  const opts = { ...options, block: true, line: true, first: true };
-  return compile(parse(input, opts), opts);
-};
-
-/**
  * Parses a string and returns a basic CST (Concrete Syntax Tree).
  *
  * ```js
@@ -114,3 +93,21 @@ strip.first = (input, options) => {
  */
 
 strip.parse = parse;
+
+module.exports = function (code) {
+  this.cacheable?.();
+  const options = loaderUtils.getOptions(this);
+  let func;
+  if (options.line === false && options.block !== false) {
+    // Only line comments
+    func = strip.line;
+  } else if (options.block === false && options.line !== false) {
+    func = strip.block;
+  } else {
+    func = strip;
+  }
+  const output = func(code, options);
+  return output;
+}
+
+module.exports.strip = strip;
