@@ -1,7 +1,7 @@
 {
   "name": "comment-stripper",
   "description": "Webpack loader that strips comments which can be used on its own too",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "homepage": "https://github.com/AMoo-Miki/comment-stripper",
   "authors": [
     "Jon Schlinkert (https://github.com/jonschlinkert)",
